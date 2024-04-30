@@ -8,7 +8,6 @@
 %define SYS_OPEN            2
 %define SYS_READ            0
 
-
 section .text
 
 global  _process_request
@@ -16,12 +15,41 @@ global  extracted_url
 
 _process_request:
     call _parse_request
+    
+    mov rdi, request_body
+    call find_and_copy
+    
     call _print_buffer
-
-    mov rsi, extracted_url
+    
+    mov  rsi, extracted_url
     call _determine_route
+
     ret
 
+find_and_copy:
+; Параметры:
+    ; RSI - указатель на начало исходного буфера
+    ; RDI - указатель на начало целевого буфера
+    .find_char:
+        mov al, [rsi]         ; Читаем текущий символ из исходного буфера
+        cmp al, 0x7f          ; Сравниваем с \x7f
+        je .copy               ; Если найден, переходим к копированию
+        cmp al, 0             ; Проверяем, не конец ли строки
+        je not_found          ; Если найден нуль-терминатор, завершаем поиск
+        inc rsi               ; Переходим к следующему символу
+        jmp .find_char         ; Продолжаем поиск
+
+    .copy:
+        mov al, [rsi]         ; Читаем символ из исходного буфера
+        mov [rdi], al         ; Записываем символ в целевой буфер
+        inc rsi               ; Перемещаемся к следующему символу в исходном буфере
+        inc rdi               ; Перемещаемся к следующему символу в целевом буфере
+        cmp al, 0             ; Проверяем, не конец ли строки
+        jne .copy              ; Если не конец, продолжаем копирование
+        ret                   ; Возвращаем управление
+
+    not_found:
+        ret                   ; Возвращаем управление, если символ не найден
 
 
 _determine_route:
@@ -31,10 +59,10 @@ _determine_route:
         je   .auth
 
         call _main_controller
-        jmp .end
+        jmp  .end
     .auth:
         call _auth_controller
-        jmp .end
+        jmp  .end
     .end:
         ret
 
@@ -119,8 +147,8 @@ _compare_route:
 
 _print_buffer:
     mov rdi, 1
-    mov rsi, extracted_url
-    mov rdx, 512
+    mov rsi, request_body
+    mov rdx, 2048
     mov rax, SYS_WRITE
     syscall
     ret
@@ -138,6 +166,10 @@ _len:
         ret
 
 
+_find_body:
+
+
+
 section .data
 
 
@@ -149,8 +181,12 @@ auth_uri:
 
 
 section .bss
+
 extracted_url:
     resb 512
 
 write_buffer:
     resb WRITE_BUFFER_LENGTH
+
+request_body:
+    resb 2048

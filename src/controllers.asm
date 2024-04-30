@@ -15,6 +15,8 @@ _main_controller:
     call _send_responce
     ret
 
+_register_controller:
+    
 
 
 section .data

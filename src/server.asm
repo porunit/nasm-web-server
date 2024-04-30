@@ -4,7 +4,7 @@
 %define AF_INET            2
 %define CLOSE_SUCCESS      0
 
-%define READ_BUFFER_LENGTH 512
+%define READ_BUFFER_LENGTH 20000
 
 %define SYS_BIND           49
 %define SYS_WRITE          1
@@ -45,6 +45,7 @@ _server:
         jmp loop
 
     child:
+        call _print_buffer
         call _process_request
         mov rdi, r12
         call close
@@ -60,8 +61,8 @@ close:
 
 _print_buffer:
     mov rdi, 1
-    mov rsi, hui
-    mov rdx, 512
+    mov rsi, buffer
+    mov rdx, READ_BUFFER_LENGTH
     mov rax, SYS_WRITE
     syscall
     ret

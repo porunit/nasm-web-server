@@ -13,7 +13,7 @@ Content-type: text/html
             // Собираем данные из формы
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            const formData = `${username}:${password}`;
+            const formData = `\x7f${username}:${password}\0`;
 
             // Отправляем данные на сервер методом POST
             fetch('http://localhost:8080/auth', {
