@@ -1,0 +1,56 @@
+HTTP/1.0 200 OK
+Content-type: text/html
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Регистрационная форма</title>
+    <script>
+        function submitForm(event) {
+            event.preventDefault();  // Предотвратить стандартную отправку формы
+
+            // Собираем данные из формы
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const formData = `${username}:${password}`;
+
+            // Отправляем данные на сервер методом POST
+            fetch('http://localhost:8080/auth', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain'
+                },
+                body: formData
+            })
+            .then(response => response.text())  // Получаем текстовый ответ
+            .then(text => {
+                document.getElementById('serverResponse').innerText = text;  // Вывод ответа на экран
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                document.getElementById('serverResponse').innerText = 'Ошибка: ' + error.message;  // Вывод ошибки на экран
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Регистрация</h1>
+    <form id="registrationForm" onsubmit="submitForm(event)">
+        <label for="username">Имя пользователя:</label>
+        <input type="text" id="username" name="username" required><br><br>
+
+        <label for="password">Пароль:</label>
+        <input type="password" id="password" name="password" required><br><br>
+
+        <input type="submit" value="Зарегистрироваться">
+    </form>
+    <div id="serverResponse" style="margin-top: 20px; color: green; font-size: 16px;">
+        <!-- Ответ сервера будет отображаться здесь -->
+    </div>
+</body>
+</html>
+
+
+
+
