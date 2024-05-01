@@ -18,38 +18,38 @@ _process_request:
     
     mov rdi, request_body
     call find_and_copy
-    
+    push rsi
+    mov rsi, request_body
     call _print_buffer
-    
+    pop rsi
     mov  rsi, extracted_url
     call _determine_route
 
     ret
 
+; rsi - search buffer rdi - copy buffer
 find_and_copy:
-; Параметры:
-    ; RSI - указатель на начало исходного буфера
-    ; RDI - указатель на начало целевого буфера
+   
     .find_char:
-        mov al, [rsi]         ; Читаем текущий символ из исходного буфера
-        cmp al, 0x7f          ; Сравниваем с \x7f
-        je .copy               ; Если найден, переходим к копированию
-        cmp al, 0             ; Проверяем, не конец ли строки
-        je not_found          ; Если найден нуль-терминатор, завершаем поиск
-        inc rsi               ; Переходим к следующему символу
-        jmp .find_char         ; Продолжаем поиск
+        mov al, [rsi]       
+        cmp al, 0x7f          
+        je .copy              
+        cmp al, 0             
+        je not_found          
+        inc rsi               
+        jmp .find_char         
 
     .copy:
-        mov al, [rsi]         ; Читаем символ из исходного буфера
-        mov [rdi], al         ; Записываем символ в целевой буфер
-        inc rsi               ; Перемещаемся к следующему символу в исходном буфере
-        inc rdi               ; Перемещаемся к следующему символу в целевом буфере
-        cmp al, 0             ; Проверяем, не конец ли строки
-        jne .copy              ; Если не конец, продолжаем копирование
-        ret                   ; Возвращаем управление
+        mov al, [rsi]         
+        mov [rdi], al        
+        inc rsi               
+        inc rdi               
+        cmp al, 0             
+        jne .copy             
+        ret                   
 
     not_found:
-        ret                   ; Возвращаем управление, если символ не найден
+        ret                  
 
 
 _determine_route:
@@ -58,9 +58,21 @@ _determine_route:
         cmp  rax, TRUE
         je   .auth
 
+        mov rdi, reg_uri
+        call _compare_route
+        cmp rax, TRUE
+        je .reg
+        
         call _main_controller
         jmp  .end
+
+
+    .reg:
+        mov rsi, request_body
+        call _register_controller
+        jmp .end
     .auth:
+        mov rsi, request_body
         call _auth_controller
         jmp  .end
     .end:
@@ -147,7 +159,6 @@ _compare_route:
 
 _print_buffer:
     mov rdi, 1
-    mov rsi, request_body
     mov rdx, 2048
     mov rax, SYS_WRITE
     syscall
@@ -179,6 +190,8 @@ main_uri:
 auth_uri:
     db '/auth', 0
 
+reg_uri:
+    db '/reg', 0
 
 section .bss
 

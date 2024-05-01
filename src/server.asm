@@ -45,7 +45,6 @@ _server:
         jmp loop
 
     child:
-        call _print_buffer
         call _process_request
         mov rdi, r12
         call close

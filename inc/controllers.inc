@@ -1,2 +1,3 @@
 extern _auth_controller
 extern _main_controller
+extern _register_controller

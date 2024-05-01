@@ -13,10 +13,10 @@ Content-type: text/html
             // Собираем данные из формы
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            const formData = `\x7f${username}:${password}\0`;
+            const formData = `\x7f${username}:${password}\0\n`;
 
             // Отправляем данные на сервер методом POST
-            fetch('http://localhost:8080/auth', {
+            fetch('http://localhost:8080/reg', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'text/plain'
